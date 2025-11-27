@@ -1,0 +1,189 @@
+import { entry, is_empty_tree, is_tree, left_branch,
+         make_empty_tree, make_tree, right_branch} from "binary_tree";
+
+/**
+ * Creates a kind-of "table" from a binary search tree.
+ * The table consists of an outer list
+ * with inner lists as its elements. The outer list is sorted with
+ * respect to the smallest element in the inner lists.
+ * The inner lists are sorted from smallest to largest,
+ * i.e., they are in ascending order. All elements e1 and e2 such
+ * that char_at(e1, 0) === char_at(e2, 0) should be in the same
+ * inner list.
+ *
+ * @param {Tree(String)} t - A tree of Strings
+ * @returns {List(List(String))} See above
+ */
+function separate_by_first_letter(t) {
+    // Your code here
+}
+
+/**
+ * Performs a left-to-right fold on a tree by walking the tree
+ * in-order and calls fun on each element.
+ *
+ * The parameter T to Function is the type of the items in the binary tree, e.g. String.
+ * The parameter U is whatever fun should return. For example, if accumulate is called with
+ * a function that checks if any item in the tree is the string "Name", then, T will be
+ * String and U will be Boolean (true or false):
+ *
+ *   tree_accumulate((e, found) => found || e === "Name", false, t)
+ *
+ * Above, the lambda function takes a String and a Boolean and retuns a Boolean, i.e.,
+ * T = String and U = Boolean.
+ *
+ * @param {Function(T,U,U)} fun
+ * @param {U} init
+ * @param {BinaryTree(T)} t
+ * @returns {U} result of the left-to-right fold
+ */
+//function tree_accumulate(fun, init, t) { //används ej!
+//    return is_empty_tree(t)
+//           ? init
+//           : fun(tree_accumulate(fun, init, left_branch(t)), entry(t), tree_accumulate(fun, init, right_branch(t)));
+//}
+//tree_accumulate((x, y, z) => pair(x, pair(y, z)), null, tree2);
+
+///// Various helper functions
+
+/**
+ * Creates a new leaf in a binary tree
+ *
+ * @param {T} item
+ * @returns {BinaryTree(T)} a new leaf with item as entry
+ */
+function make_leaf(item) {
+    return make_tree(item, make_empty_tree(), make_empty_tree());
+}
+
+/**
+ * Creates a new subtree from best by replacing its left subtree by left
+ *
+ * @param {BinaryTree(T)} bst
+ * @param {BinaryTree(T)} left
+ * @returns {BinaryTree(T)} a new tree with left as left subtree
+ */
+function update_left(bst, left) {
+    return make_tree(head(bst), left, right_branch(bst));
+}
+
+/**
+ * Creates a new subtree from best by replacing its right subtree by right
+ *
+ * @param {BinaryTree(T)} bst
+ * @param {BinaryTree(T)} right
+ * @returns {BinaryTree(T)} a new tree with right as right subtree
+ */
+function update_right(bst, right) {
+    return make_tree(head(bst), left_branch(bst), right);
+}
+
+/**
+ * Adds an element of type T to a binary sorted tree of type T.
+ * @param {BST(T)} bst - binary search tree of type T
+ * @param {T} item - element of type T to add
+ * @returns Returns a binary sorted tree of type T that contains item, all
+ *          elements of bst, and nothing else
+*/
+function tree_insert(bst, item) { // Solution adapted from SICP JS 2.3.3 (adjoin_set)
+    return is_empty_tree(bst)
+        ? make_leaf(item)
+        : head(bst) === item
+            ? bst
+            : head(bst) > item
+                ? update_left(bst, tree_insert(left_branch(bst), item))
+                : update_right(bst, tree_insert(right_branch(bst), item));
+}
+
+/**
+ * Compares two lists of lists from separate_by_first_letter to see if they are equivalent.
+ * @param {List(List(T)} outer1 - list of lists of elements
+ * @param {List(List(T)} outer2 - list of lists of elements
+ * @returns true if all inner lists with index i in the outer lists
+ *      have the same elements in the same order, else false
+*/
+function compare_results(outer1, outer2) {
+    function compare_inner(inner1, inner2) {
+        return is_null(inner1)
+            ? is_null(inner2)
+            : is_null(inner2)
+            ? is_null(inner1)
+            : head(inner1) === head(inner2) &&
+                compare_inner(tail(inner1), tail(inner2));
+    }
+    return is_null(outer1)
+        ? is_null(outer2)
+        : is_null(outer1)
+        ? is_null(outer2)
+        : compare_inner(head(outer1), head(outer2)) &&
+            compare_results(tail(outer1), tail(outer2));
+}
+
+/// Below are two sets of strings you can test with
+
+const few_words_result = list(
+  list("Alpacca", "Ansgar", "Apa"),
+  list("Banan", "Buske"),
+  list("Chinchilla"),
+  list("Dromedar"));
+
+// Flatten the table
+const few_words = accumulate(append, null, few_words_result);
+
+// Build a tree from the flattened list
+const tree1 = accumulate((w, t) => tree_insert(t, w), make_empty_tree(), few_words);  
+
+// As above but more words
+const many_words = list("Födelsedag", "Mögel", "Noll", "Leksak", "Linjer", "Vetenskapsman", "Panna", "Remos", "Skiffer", "Mistel", "Argentinska", "Drottning", "Dropp", "Aspirera", "Domaren", "Krona", "Tornado", "Affe", "Knopp", "Brasilianisch", "Budbärare", "Skilsmässa", "Som", "Dick", "Underarm", "Klocktornet", "Efternamn", "Bevara", "Inaktiverad", "Bett", "Betala", "Investering", "Champagne", "Skyskrapa", "Zon", "Deutschland", "Hårdhet", "Oväsen", "Storbritannien", "Promotor");
+const tree2 = accumulate((w, t) => tree_insert(t, w), make_empty_tree(), many_words);
+
+// separate_by_first_letter(tree1);
+// separate_by_first_letter(tree2);
+// compare_results(few_words_result, separate_by_first_letter(tree1));
+
+////MARCUS KOD :3
+
+//Converts a binary search tree to a list (with messy nestings).
+function tree_to_list(given_tree) { //variant: height of tree
+    return is_empty_tree(given_tree)
+        ? null
+        : list(tree_to_list(left_branch(given_tree)), 
+               entry(given_tree), 
+               tree_to_list(right_branch(given_tree)));
+}
+
+//Like append, but the arguments do not have to be lists.
+function append_flexible(xs, ys) {
+    if (! is_list(ys) && ! is_list(xs)) {
+        return append(list(xs), list(ys));
+    } else if (! is_list(ys)) {
+        return append(xs, list(ys));
+    } else if (! is_list(xs)) {
+        return append(list(xs), ys);
+    } else {
+        return append(xs, ys);
+    }
+}
+
+//Flatten a list one time.
+function flatten_once(xs) {
+    return accumulate(append_flexible, null, xs);
+}
+
+//Flatten a list multiple times.
+function flatten_multiple_times(xs, cnt) { //variant: cnt
+    return cnt === 0
+        ? xs
+        : flatten_multiple_times(flatten_once(xs), cnt - 1);
+}
+
+//Flatten a list completely, by flattening it 100 times.
+function flatten_list(xs) {
+    return flatten_multiple_times(xs, 100);
+}
+
+//Tests.
+const messy_list = tree_to_list(tree2);
+const nice_list = flatten_list(messy_list);
+display_list(nice_list);
+//Nu har vi en fin lista, och i denna vill vi gruppera alla A-ord, B-ord, C-ord, D-ord o.s.v. i enskilda listor! :)
