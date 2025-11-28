@@ -1,0 +1,58 @@
+// (optional) helper functions here
+
+// Sums together all entries of sales in a network.
+function combined_sales_of_network(nw) {
+        // Base case:the tree is null / the tree has no children
+        if (is_null(nw) || is_null(tail(nw))) {
+            return tail(head(nw));
+      } else {
+            return tail(head(nw)) + accumulate((x, y) => (x + y), 0, map(combined_sales_of_network, tail(nw)));
+        }
+    }
+    
+/**
+ * Adds up the sales of MLM members and their downline
+ * @param {Tree} network - the MLM network as a general tree,
+ *     where each item is a pair of a member's name and sales.
+ * @precondition network /== null
+ * @returns {Tree} the MLM network as a general tree,
+ *     where each item is a pair of a name and the sales of their downline.
+ */
+function sum_sales(network) {
+    return modify_nodes_and_build_tree(network);
+    // your code here
+    //return gt_map(combined_sales_of_network, network);
+}
+
+// example networks provided for testing
+const small_network = list(pair("Alice", 100),
+                           list(pair("Bob", 50)),
+                           list(pair("Celine", 40), list(pair("David", 30))));
+
+const larger_network = list(
+    pair("Joe", 3),
+    list(pair("Matilda", 2),
+         list(pair("Magnus", 1)),
+         list(pair("Lea", 1)),
+         list(pair("Fred", 1))),
+    list(pair("Andrea", 2), list(pair("Susan", 1)), list(pair("Leif", 1))),
+    list(pair("Hannah", 2)));
+
+const tiny_network = list(pair("Marcus", 100), list(pair("Camilla", 20), list(pair("Håkan", 3))));
+
+//Gets the desired root node for this task.
+function modify_root_node(nw) {
+    return pair(head(head(nw)), combined_sales_of_network(nw));
+}
+
+function modify_nodes_and_build_tree(nw) {
+    if (is_null(nw)) {
+        return null;
+    } else if (is_null(tail(nw))) {
+        return pair(modify_root_node(nw), null);
+    } else {
+        return pair(modify_root_node(nw), map(modify_nodes_and_build_tree, tail(nw)));
+    }
+}
+
+modify_nodes_and_build_tree(small_network);
