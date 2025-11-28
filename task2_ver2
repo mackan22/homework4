@@ -1,0 +1,59 @@
+// (optional) helper functions here
+
+/** 
+ * Returns the sum of all sales in an MLM network.
+ * 
+ * 
+ * 
+ * 
+ */
+
+function combined_sales_of_network(network) {
+        // Base case: the tree is null / the node has no children
+        if (is_null(network) || is_null(tail(network))) {
+            return tail(head(network));
+      } else {
+          //Recursive case: the node has children.
+            return tail(head(network)) + 
+            accumulate((x, y) => 
+            (x + y), 0, map(combined_sales_of_network, tail(network)));
+        }
+    }
+
+// Returns the root node of the given network, with the sales number modified
+// to the sum of the member's own sales and the the member's downline's sales.
+function modify_root_node(network) {
+    return pair(head(head(network)), combined_sales_of_network(network));
+}
+
+/**
+ * Adds up the sales of MLM members and their downline
+ * @param {Tree} network - the MLM network as a general tree,
+ *     where each item is a pair of a member's name and sales.
+ * @precondition network /== null
+ * @returns {Tree} the MLM network as a general tree,
+ *     where each item is a pair of a name and the sales of their downline.
+ */
+function sum_sales(network) {
+    if (is_null(network)) {
+        return null;
+    } else if (is_null(tail(network))) {
+        return pair(modify_root_node(network), null);
+    } else {
+        return pair(modify_root_node(network), map(sum_sales, tail(network)));
+    }
+}
+
+// example networks provided for testing
+const small_network = list(pair("Alice", 100),
+                           list(pair("Bob", 50)),
+                           list(pair("Celine", 40), list(pair("David", 30))));
+
+const larger_network = list(
+    pair("Joe", 3),
+    list(pair("Matilda", 2),
+         list(pair("Magnus", 1)),
+         list(pair("Lea", 1)),
+         list(pair("Fred", 1))),
+    list(pair("Andrea", 2), list(pair("Susan", 1)), list(pair("Leif", 1))),
+    list(pair("Hannah", 2)));
